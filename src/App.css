@@ -1567,3 +1567,72 @@ body.light-theme .video-preview p {
 .modal-close:hover {
    color: #fff;
 }
+
+.note-toolbar {
+   display: flex;
+   flex-wrap: wrap;
+   gap: 5px;
+   padding: 10px;
+   background: #333;
+   border-radius: 5px 5px 0 0;
+   border-bottom: 1px solid #555;
+}
+
+.note-toolbar button,
+.note-toolbar select {
+   padding: 5px 8px;
+   border: none;
+   border-radius: 3px;
+   background: #444;
+   color: #eee;
+   cursor: pointer;
+   font-size: 12px;
+   transition: background 0.2s ease;
+}
+
+.note-toolbar button:hover,
+.note-toolbar select:hover {
+   background: #555;
+}
+
+.note-content-rich {
+   padding: 15px;
+   border: 1px solid #555;
+   border-radius: 0 0 5px 5px;
+   font-size: 14px;
+   background: #2e2e2e;
+   color: #eee;
+   min-height: 150px;
+   outline: none;
+   line-height: 1.5;
+}
+
+.note-content-rich:focus {
+   border-color: #3a86ff;
+}
+
+body.light-theme .note-toolbar {
+   background: #f0f0f0;
+   border-bottom: 1px solid #ddd;
+}
+
+body.light-theme .note-toolbar button,
+body.light-theme .note-toolbar select {
+   background: #e0e0e0;
+   color: #333;
+}
+
+body.light-theme .note-toolbar button:hover,
+body.light-theme .note-toolbar select:hover {
+   background: #d0d0d0;
+}
+
+body.light-theme .note-content-rich {
+   background: #ffffff;
+   color: #333;
+   border: 1px solid #ddd;
+}
+
+body.light-theme .note-content-rich:focus {
+   border-color: #3a86ff;
+}

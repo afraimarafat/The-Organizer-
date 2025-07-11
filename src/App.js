@@ -110,6 +110,9 @@ const Notes = ({ notes, setNotes }) => {
        return [];
    });
    const [newNoteContent, setNewNoteContent] = useState('');
+   const [activeNoteId, setActiveNoteId] = useState(null);
+   const [undoStack, setUndoStack] = useState({});
+   const [redoStack, setRedoStack] = useState({});
 
    useEffect(() => {
        if (typeof window !== 'undefined') {
@@ -140,6 +143,24 @@ const Notes = ({ notes, setNotes }) => {
            note.id === id ? { ...note, content: newContent } : note
        );
        setNotes(updatedNotes);
+   };
+
+   const formatText = (command, value = null) => {
+       if (activeNoteId) {
+           document.execCommand(command, false, value);
+       }
+   };
+
+   const undo = () => {
+       if (activeNoteId) {
+           document.execCommand('undo');
+       }
+   };
+
+   const redo = () => {
+       if (activeNoteId) {
+           document.execCommand('redo');
+       }
    };
 
    const deleteNote = (id) => {
@@ -180,11 +201,53 @@ const Notes = ({ notes, setNotes }) => {
                            </div>
                        </div>
                        {openNoteIds.includes(note.id) && (
-                           <textarea
-                               value={note.content}
-                               onChange={(e) => updateNote(note.id, e.target.value)}
-                               className="note-content"
-                           />
+                           <>
+                               <div className="note-toolbar">
+                                   <button onClick={undo} title="Undo">↶</button>
+                                   <button onClick={redo} title="Redo">↷</button>
+                                   <select onChange={(e) => formatText('formatBlock', e.target.value)} defaultValue="">
+                                       <option value="">Paragraph</option>
+                                       <option value="h1">Heading 1</option>
+                                       <option value="h2">Heading 2</option>
+                                       <option value="h3">Heading 3</option>
+                                   </select>
+                                   <button onClick={() => formatText('bold')} title="Bold"><b>B</b></button>
+                                   <button onClick={() => formatText('italic')} title="Italic"><i>I</i></button>
+                                   <button onClick={() => formatText('underline')} title="Underline"><u>U</u></button>
+                                   <select onChange={(e) => formatText('foreColor', e.target.value)} title="Text Color">
+                                       <option value="">🎨</option>
+                                       <option value="black">Black</option>
+                                       <option value="red">Red</option>
+                                       <option value="blue">Blue</option>
+                                       <option value="green">Green</option>
+                                   </select>
+                                   <select onChange={(e) => formatText('fontSize', e.target.value)} title="Font Size">
+                                       <option value="">A²</option>
+                                       <option value="1">Small</option>
+                                       <option value="3">Normal</option>
+                                       <option value="5">Large</option>
+                                       <option value="7">Extra Large</option>
+                                   </select>
+                                   <button onClick={() => formatText('justifyLeft')} title="Align Left">⬅</button>
+                                   <button onClick={() => formatText('justifyCenter')} title="Align Center">⬌</button>
+                                   <button onClick={() => formatText('justifyRight')} title="Align Right">➡</button>
+                                   <button onClick={() => formatText('justifyFull')} title="Justify">⬍</button>
+                                   <button onClick={() => formatText('insertUnorderedList')} title="Bullet List">•</button>
+                                   <button onClick={() => formatText('insertOrderedList')} title="Numbered List">1.</button>
+                                   <button onClick={() => formatText('outdent')} title="Decrease Indent">⬅</button>
+                                   <button onClick={() => formatText('indent')} title="Increase Indent">➡</button>
+                                   <button onClick={() => formatText('insertHorizontalRule')} title="Insert Line">Σ</button>
+                                   <button title="Attach File">📎</button>
+                               </div>
+                               <div
+                                   contentEditable
+                                   className="note-content-rich"
+                                   dangerouslySetInnerHTML={{ __html: note.content }}
+                                   onInput={(e) => updateNote(note.id, e.target.innerHTML)}
+                                   onFocus={() => setActiveNoteId(note.id)}
+                                   onBlur={() => setActiveNoteId(null)}
+                               />
+                           </>
                        )}
                    </div>
                ))}
