@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from './utils/supabase';
 
 export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -7,72 +8,33 @@ export default function Auth({ onLogin }) {
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!email || !password) return;
 
-        // Get existing users from localStorage
-        const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
-        console.log('Existing users:', existingUsers);
-        console.log('Trying to login with:', email);
-        
-        if (isLogin) {
-            // Login: Check if user exists and password matches
-            const user = existingUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-            console.log('Found user:', user);
-            
-            if (!user) {
-                alert(`Email "${email}" not registered. Please sign up first.`);
+        try {
+            const { data, error } = isLogin 
+                ? await api.signIn(email, password)
+                : await api.signUp(email, password, name);
+
+            if (error) {
+                alert(error.message);
                 return;
             }
-            if (user.password !== password) {
-                alert('Incorrect password.');
-                return;
+
+            if (data.user) {
+                const userData = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata?.name || name || email,
+                    preferences: { darkMode: true }
+                };
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                onLogin(userData);
             }
-            
-            // Login successful
-            const userData = {
-                email: user.email,
-                name: user.name,
-                preferences: user.preferences || { darkMode: true }
-            };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            onLogin(userData);
-        } else {
-            // Sign up: Check if user already exists
-            const userExists = existingUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
-            if (userExists) {
-                alert('Email already registered. Please login instead.');
-                return;
-            }
-            
-            // Register new user
-            const newUser = {
-                email: email.toLowerCase(),
-                password,
-                name: name || email,
-                joinDate: new Date().toISOString(),
-                preferences: { 
-                    darkMode: true,
-                    language: 'English',
-                    timezone: 'AEST',
-                    emailNotifications: true
-                }
-            };
-            
-            existingUsers.push(newUser);
-            localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
-            console.log('Registered new user:', newUser);
-            console.log('All users now:', existingUsers);
-            
-            // Auto login after signup
-            const userData = {
-                email: newUser.email,
-                name: newUser.name,
-                preferences: newUser.preferences
-            };
-            localStorage.setItem('currentUser', JSON.stringify(userData));
-            onLogin(userData);
+        } catch (err) {
+            console.error('Auth error:', err);
+            alert('Authentication failed: ' + err.message);
         }
     };
 

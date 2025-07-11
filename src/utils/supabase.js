@@ -7,6 +7,11 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_AN
 console.log('Supabase URL:', supabaseUrl)
 console.log('Supabase Key:', supabaseKey ? 'Key loaded' : 'Key missing')
 
+// Test connection
+supabase.from('tasks').select('count').then(({ data, error }) => {
+  console.log('Supabase connection test:', { data, error })
+})
+
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
 export const api = {
