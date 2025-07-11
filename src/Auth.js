@@ -11,16 +11,57 @@ export default function Auth({ onLogin }) {
         e.preventDefault();
         if (!email || !password) return;
 
-        const userData = {
-            email,
-            name: isLogin ? email : name,
-            preferences: {
-                darkMode: true
+        // Get existing users from localStorage
+        const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        
+        if (isLogin) {
+            // Login: Check if user exists and password matches
+            const user = existingUsers.find(u => u.email === email);
+            if (!user) {
+                alert('Email not registered. Please sign up first.');
+                return;
             }
-        };
-
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        onLogin(userData);
+            if (user.password !== password) {
+                alert('Incorrect password.');
+                return;
+            }
+            
+            // Login successful
+            const userData = {
+                email: user.email,
+                name: user.name,
+                preferences: user.preferences || { darkMode: true }
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            onLogin(userData);
+        } else {
+            // Sign up: Check if user already exists
+            const userExists = existingUsers.find(u => u.email === email);
+            if (userExists) {
+                alert('Email already registered. Please login instead.');
+                return;
+            }
+            
+            // Register new user
+            const newUser = {
+                email,
+                password,
+                name: name || email,
+                preferences: { darkMode: true }
+            };
+            
+            existingUsers.push(newUser);
+            localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+            
+            // Auto login after signup
+            const userData = {
+                email: newUser.email,
+                name: newUser.name,
+                preferences: newUser.preferences
+            };
+            localStorage.setItem('currentUser', JSON.stringify(userData));
+            onLogin(userData);
+        }
     };
 
     return (
