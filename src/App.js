@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Auth from './Auth';
 import Settings from './Settings';
+import { api } from './utils/api';
 
 const EditTaskModal = ({ isOpen, onClose, task, onSave }) => {
    const [editText, setEditText] = useState(task?.text || '');
@@ -219,10 +220,7 @@ export default function TodoApp() {
        }
    }
 
-   const [tasks, setTasks] = useState(() => {
-       const saved = localStorage.getItem('tasks');
-       return saved ? JSON.parse(saved) : [];
-   });
+   const [tasks, setTasks] = useState([]);
    const [input, setInput] = useState('');
    const [taskDate, setTaskDate] = useState('');
    const [taskTime, setTaskTime] = useState('');
@@ -290,8 +288,19 @@ export default function TodoApp() {
    };
 
    useEffect(() => {
-       localStorage.setItem('tasks', JSON.stringify(tasks));
-   }, [tasks]);
+       if (isAuthenticated) {
+           loadTasks();
+       }
+   }, [isAuthenticated]);
+
+   const loadTasks = async () => {
+       try {
+           const data = await api.getTasks();
+           setTasks(data);
+       } catch (error) {
+           console.error('Failed to load tasks:', error);
+       }
+   };
 
    useEffect(() => {
        if (typeof window !== 'undefined') {
@@ -334,25 +343,36 @@ export default function TodoApp() {
        }, 500);
    };
 
-   const addTask = () => {
+   const addTask = async () => {
        if (!input.trim() || !taskDate) return;
        const fullDate = taskTime ? `${taskDate}T${taskTime}` : taskDate;
-       setTasks([...tasks, {
-           text: input.trim(),
-           date: fullDate,
-           frequency,
-           endDate: frequency !== 'once' ? taskEndDate : '',
-       }]);
-       setInput('');
-       setTaskDate('');
-       setTaskTime('');
-       setFrequency('once');
-       setTaskEndDate('');
-       setShowTaskEndDatePicker(false);
+       try {
+           const newTask = await api.createTask({
+               text: input.trim(),
+               date: fullDate,
+               frequency,
+               endDate: frequency !== 'once' ? taskEndDate : '',
+           });
+           setTasks([...tasks, newTask]);
+           setInput('');
+           setTaskDate('');
+           setTaskTime('');
+           setFrequency('once');
+           setTaskEndDate('');
+           setShowTaskEndDatePicker(false);
+       } catch (error) {
+           console.error('Failed to add task:', error);
+       }
    };
 
-   const removeTask = (index) => {
-       setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
+   const removeTask = async (index) => {
+       const task = tasks[index];
+       try {
+           await api.deleteTask(task.id);
+           setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
+       } catch (error) {
+           console.error('Failed to delete task:', error);
+       }
    };
 
    const openEditModal = (index) => {
@@ -360,13 +380,18 @@ export default function TodoApp() {
        setEditModalOpen(true);
    };
 
-   const saveEditedTask = (editedTask) => {
-       setTasks(prevTasks =>
-           prevTasks.map((task) =>
-               task === taskToEdit ? editedTask : task
-           )
-       );
-       setTaskToEdit(null);
+   const saveEditedTask = async (editedTask) => {
+       try {
+           const updatedTask = await api.updateTask(editedTask);
+           setTasks(prevTasks =>
+               prevTasks.map((task) =>
+                   task === taskToEdit ? updatedTask : task
+               )
+           );
+           setTaskToEdit(null);
+       } catch (error) {
+           console.error('Failed to update task:', error);
+       }
    };
 
    const handleFileUpload = (e) => {

@@ -7,20 +7,34 @@ export default function Auth({ onLogin }) {
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (!email || !password) return;
 
-        const userData = {
-            email,
-            name: isLogin ? email : name,
-            preferences: {
-                darkMode: true
-            }
-        };
+        try {
+            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+            const body = isLogin ? { email, password } : { email, password, name };
+            
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
 
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        onLogin(userData);
+            const data = await response.json();
+            
+            if (!response.ok) {
+                alert(data.error || 'Authentication failed');
+                return;
+            }
+
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+            onLogin(data.user);
+        } catch (error) {
+            console.error('Auth error:', error);
+            alert('Authentication failed');
+        }
     };
 
     return (
