@@ -1596,19 +1596,60 @@ body.light-theme .video-preview p {
 }
 
 .note-content-rich {
-   padding: 15px;
-   border: 1px solid #555;
-   border-radius: 0 0 5px 5px;
    font-size: 14px;
    background: #2e2e2e;
    color: #eee;
-   min-height: 150px;
-   outline: none;
    line-height: 1.5;
+   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.note-content-rich:focus {
-   border-color: #3a86ff;
+.note-content-rich h1 {
+   font-size: 2em;
+   font-weight: bold;
+   margin: 0.5em 0;
+}
+
+.note-content-rich h2 {
+   font-size: 1.5em;
+   font-weight: bold;
+   margin: 0.5em 0;
+}
+
+.note-content-rich h3 {
+   font-size: 1.2em;
+   font-weight: bold;
+   margin: 0.5em 0;
+}
+
+.note-content-rich p {
+   margin: 0.5em 0;
+}
+
+.note-content-rich ul, .note-content-rich ol {
+   margin: 0.5em 0;
+   padding-left: 2em;
+}
+
+.note-content-rich li {
+   margin: 0.2em 0;
+}
+
+.note-content-rich hr {
+   border: none;
+   border-top: 2px solid #555;
+   margin: 1em 0;
+}
+
+.note-content-rich img {
+   max-width: 100%;
+   height: auto;
+   border-radius: 5px;
+   margin: 0.5em 0;
+}
+
+.note-content-rich a {
+   color: #3a86ff;
+   text-decoration: underline;
 }
 
 body.light-theme .note-toolbar {
@@ -1630,9 +1671,12 @@ body.light-theme .note-toolbar select:hover {
 body.light-theme .note-content-rich {
    background: #ffffff;
    color: #333;
-   border: 1px solid #ddd;
 }
 
-body.light-theme .note-content-rich:focus {
-   border-color: #3a86ff;
+body.light-theme .note-content-rich hr {
+   border-top: 2px solid #ddd;
+}
+
+body.light-theme .note-content-rich a {
+   color: #3a86ff;
 }

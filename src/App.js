@@ -145,46 +145,111 @@ const Notes = ({ notes, setNotes }) => {
        setNotes(updatedNotes);
    };
 
+   const execCommand = (command, value = null) => {
+       const editor = document.getElementById(`editor-${activeNoteId}`);
+       if (editor && activeNoteId) {
+           editor.focus();
+           const success = document.execCommand(command, false, value);
+           if (success) {
+               const newContent = editor.innerHTML;
+               updateNote(activeNoteId, newContent);
+           }
+           return success;
+       }
+       return false;
+   };
+
    const formatText = (command, value = null) => {
-       const editor = document.getElementById(`note-${activeNoteId}`);
-       if (editor) {
-           editor.focus();
-           document.execCommand(command, false, value);
-           updateNote(activeNoteId, editor.innerHTML);
+       execCommand(command, value);
+   };
+
+   const handleUndo = () => {
+       execCommand('undo');
+   };
+
+   const handleRedo = () => {
+       execCommand('redo');
+   };
+
+   const handleBold = () => {
+       execCommand('bold');
+   };
+
+   const handleItalic = () => {
+       execCommand('italic');
+   };
+
+   const handleUnderline = () => {
+       execCommand('underline');
+   };
+
+   const handleFormatBlock = (tag) => {
+       if (tag) {
+           execCommand('formatBlock', `<${tag}>`);
        }
    };
 
-   const undo = () => {
-       const editor = document.getElementById(`note-${activeNoteId}`);
-       if (editor) {
-           editor.focus();
-           document.execCommand('undo');
-           updateNote(activeNoteId, editor.innerHTML);
+   const handleForeColor = (color) => {
+       if (color) {
+           execCommand('foreColor', color);
        }
    };
 
-   const redo = () => {
-       const editor = document.getElementById(`note-${activeNoteId}`);
-       if (editor) {
-           editor.focus();
-           document.execCommand('redo');
-           updateNote(activeNoteId, editor.innerHTML);
+   const handleFontSize = (size) => {
+       if (size) {
+           execCommand('fontSize', size);
        }
    };
 
-   const insertFile = () => {
+   const handleJustifyLeft = () => {
+       execCommand('justifyLeft');
+   };
+
+   const handleJustifyCenter = () => {
+       execCommand('justifyCenter');
+   };
+
+   const handleJustifyRight = () => {
+       execCommand('justifyRight');
+   };
+
+   const handleJustifyFull = () => {
+       execCommand('justifyFull');
+   };
+
+   const handleInsertUnorderedList = () => {
+       execCommand('insertUnorderedList');
+   };
+
+   const handleInsertOrderedList = () => {
+       execCommand('insertOrderedList');
+   };
+
+   const handleOutdent = () => {
+       execCommand('outdent');
+   };
+
+   const handleIndent = () => {
+       execCommand('indent');
+   };
+
+   const handleInsertHorizontalRule = () => {
+       execCommand('insertHorizontalRule');
+   };
+
+   const handleFileUpload = () => {
        const input = document.createElement('input');
        input.type = 'file';
-       input.accept = 'image/*,application/pdf,.doc,.docx,.txt';
+       input.accept = 'image/*,.pdf,.doc,.docx,.txt';
        input.onchange = (e) => {
            const file = e.target.files[0];
            if (file) {
                const reader = new FileReader();
                reader.onload = (event) => {
                    if (file.type.startsWith('image/')) {
-                       formatText('insertImage', event.target.result);
+                       execCommand('insertImage', event.target.result);
                    } else {
-                       formatText('insertHTML', `<a href="${event.target.result}" download="${file.name}">${file.name}</a>`);
+                       execCommand('insertHTML', `<a href="${event.target.result}" download="${file.name}">${file.name}</a>`);
                    }
                };
                reader.readAsDataURL(file);
@@ -233,19 +298,19 @@ const Notes = ({ notes, setNotes }) => {
                        {openNoteIds.includes(note.id) && (
                            <>
                                <div className="note-toolbar">
-                                   <button onClick={undo} title="Undo">↶</button>
-                                   <button onClick={redo} title="Redo">↷</button>
-                                   <select onChange={(e) => { formatText('formatBlock', e.target.value); e.target.value = ''; }} defaultValue="">
+                                   <button onClick={handleUndo} title="Undo">↶</button>
+                                   <button onClick={handleRedo} title="Redo">↷</button>
+                                   <select onChange={(e) => { handleFormatBlock(e.target.value); e.target.value = ''; }} defaultValue="">
                                        <option value="">Paragraph</option>
                                        <option value="h1">Heading 1</option>
                                        <option value="h2">Heading 2</option>
                                        <option value="h3">Heading 3</option>
-                                       <option value="p">Normal</option>
+                                       <option value="p">Normal Text</option>
                                    </select>
-                                   <button onClick={() => formatText('bold')} title="Bold"><b>B</b></button>
-                                   <button onClick={() => formatText('italic')} title="Italic"><i>I</i></button>
-                                   <button onClick={() => formatText('underline')} title="Underline"><u>U</u></button>
-                                   <select onChange={(e) => { formatText('foreColor', e.target.value); e.target.value = ''; }} title="Text Color">
+                                   <button onClick={handleBold} title="Bold"><b>B</b></button>
+                                   <button onClick={handleItalic} title="Italic"><i>I</i></button>
+                                   <button onClick={handleUnderline} title="Underline"><u>U</u></button>
+                                   <select onChange={(e) => { handleForeColor(e.target.value); e.target.value = ''; }} title="Text Color">
                                        <option value="">🎨</option>
                                        <option value="#000000">Black</option>
                                        <option value="#ff0000">Red</option>
@@ -254,8 +319,9 @@ const Notes = ({ notes, setNotes }) => {
                                        <option value="#800080">Purple</option>
                                        <option value="#ffa500">Orange</option>
                                        <option value="#ffff00">Yellow</option>
+                                       <option value="#ffffff">White</option>
                                    </select>
-                                   <select onChange={(e) => { formatText('fontSize', e.target.value); e.target.value = ''; }} title="Font Size">
+                                   <select onChange={(e) => { handleFontSize(e.target.value); e.target.value = ''; }} title="Font Size">
                                        <option value="">A²</option>
                                        <option value="1">Tiny</option>
                                        <option value="2">Small</option>
@@ -265,26 +331,42 @@ const Notes = ({ notes, setNotes }) => {
                                        <option value="6">X-Large</option>
                                        <option value="7">XX-Large</option>
                                    </select>
-                                   <button onClick={() => formatText('justifyLeft')} title="Align Left">←</button>
-                                   <button onClick={() => formatText('justifyCenter')} title="Align Center">↔</button>
-                                   <button onClick={() => formatText('justifyRight')} title="Align Right">→</button>
-                                   <button onClick={() => formatText('justifyFull')} title="Justify">↕</button>
-                                   <button onClick={() => formatText('insertUnorderedList')} title="Bullet List">•</button>
-                                   <button onClick={() => formatText('insertOrderedList')} title="Numbered List">1.</button>
-                                   <button onClick={() => formatText('outdent')} title="Decrease Indent">←</button>
-                                   <button onClick={() => formatText('indent')} title="Increase Indent">→</button>
-                                   <button onClick={() => formatText('insertHorizontalRule')} title="Insert Line">―</button>
-                                   <button onClick={insertFile} title="Attach File">📎</button>
+                                   <button onClick={handleJustifyLeft} title="Align Left">←</button>
+                                   <button onClick={handleJustifyCenter} title="Align Center">↔</button>
+                                   <button onClick={handleJustifyRight} title="Align Right">→</button>
+                                   <button onClick={handleJustifyFull} title="Justify">↕</button>
+                                   <button onClick={handleInsertUnorderedList} title="Bullet List">•</button>
+                                   <button onClick={handleInsertOrderedList} title="Numbered List">1.</button>
+                                   <button onClick={handleOutdent} title="Decrease Indent">←</button>
+                                   <button onClick={handleIndent} title="Increase Indent">→</button>
+                                   <button onClick={handleInsertHorizontalRule} title="Insert Line">―</button>
+                                   <button onClick={handleFileUpload} title="Attach File">📎</button>
                                </div>
                                <div
-                                   id={`note-${note.id}`}
+                                   id={`editor-${note.id}`}
                                    contentEditable
                                    className="note-content-rich"
-                                   dangerouslySetInnerHTML={{ __html: note.content || '' }}
-                                   onInput={(e) => updateNote(note.id, e.target.innerHTML)}
-                                   onFocus={() => setActiveNoteId(note.id)}
-                                   onBlur={() => setActiveNoteId(null)}
+                                   dangerouslySetInnerHTML={{ __html: note.content || '<p>Start typing...</p>' }}
+                                   onInput={(e) => {
+                                       updateNote(note.id, e.target.innerHTML);
+                                   }}
+                                   onFocus={() => {
+                                       setActiveNoteId(note.id);
+                                   }}
+                                   onBlur={() => {
+                                       setTimeout(() => setActiveNoteId(null), 100);
+                                   }}
+                                   onMouseDown={() => {
+                                       setActiveNoteId(note.id);
+                                   }}
                                    suppressContentEditableWarning={true}
+                                   style={{
+                                       minHeight: '150px',
+                                       padding: '15px',
+                                       border: activeNoteId === note.id ? '2px solid #3a86ff' : '1px solid #555',
+                                       borderRadius: '0 0 5px 5px',
+                                       outline: 'none'
+                                   }}
                                />
                            </>
                        )}
