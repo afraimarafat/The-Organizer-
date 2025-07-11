@@ -291,7 +291,7 @@ export default function TodoApp() {
    };
 
    useEffect(() => {
-       // Check if user is already logged in (fallback to localStorage)
+       // Simple initialization - check localStorage first
        const savedUser = localStorage.getItem('currentUser');
        if (savedUser) {
            try {
@@ -299,56 +299,9 @@ export default function TodoApp() {
                setUser(userData);
                setIsAuthenticated(true);
                setShowMainApp(true);
-               return;
            } catch (e) {
                console.error('Error parsing saved user:', e);
            }
-       }
-
-       // Try Supabase auth if available
-       try {
-           supabase.auth.getSession().then(({ data: { session } }) => {
-               if (session) {
-                   setCurrentUser(session.user);
-                   setUser({
-                       id: session.user.id,
-                       email: session.user.email,
-                       name: session.user.user_metadata?.name || session.user.email,
-                       preferences: { darkMode: true }
-                   });
-                   setIsAuthenticated(true);
-                   setShowMainApp(true);
-                   loadTasks();
-               }
-           }).catch(err => {
-               console.error('Supabase auth error:', err);
-           });
-
-           // Listen for auth changes
-           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-               if (session) {
-                   setCurrentUser(session.user);
-                   setUser({
-                       id: session.user.id,
-                       email: session.user.email,
-                       name: session.user.user_metadata?.name || session.user.email,
-                       preferences: { darkMode: true }
-                   });
-                   setIsAuthenticated(true);
-                   setShowMainApp(true);
-                   loadTasks();
-               } else {
-                   setCurrentUser(null);
-                   setUser(null);
-                   setIsAuthenticated(false);
-                   setShowMainApp(false);
-                   setTasks([]);
-               }
-           });
-
-           return () => subscription.unsubscribe();
-       } catch (err) {
-           console.error('Supabase initialization error:', err);
        }
    }, []);
 
