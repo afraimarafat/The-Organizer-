@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || process.env.SUPABASE_URL || 'https://kyietkpayecbkkxsjwvc.supabase.co'
+const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5aWV0a3BheWVjYmtreHNqd3ZjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyMTMwNzQsImV4cCI6MjA2Nzc4OTA3NH0.RCVx7zfNaoKQZtqhNkUzb4s5C7EwZnVHDhB-Xo3lR94'
 
 // Debug: Check if keys are loaded
 console.log('Supabase URL:', supabaseUrl)
