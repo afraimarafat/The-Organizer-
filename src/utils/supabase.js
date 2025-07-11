@@ -1,0 +1,105 @@
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'YOUR_SUPABASE_URL'
+const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+
+// Debug: Check if keys are loaded
+console.log('Supabase URL:', supabaseUrl)
+console.log('Supabase Key:', supabaseKey ? 'Key loaded' : 'Key missing')
+
+export const supabase = createClient(supabaseUrl, supabaseKey)
+
+export const api = {
+  // Auth
+  async signUp(email, password, name) {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { name }
+      }
+    })
+    return { data, error }
+  },
+
+  async signIn(email, password) {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    })
+    return { data, error }
+  },
+
+  async signOut() {
+    const { error } = await supabase.auth.signOut()
+    return { error }
+  },
+
+  // Tasks
+  async getTasks() {
+    const { data, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
+
+  async createTask(task) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([task])
+      .select()
+    return { data: data?.[0], error }
+  },
+
+  async updateTask(id, updates) {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updates)
+      .eq('id', id)
+      .select()
+    return { data: data?.[0], error }
+  },
+
+  async deleteTask(id) {
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id)
+    return { error }
+  },
+
+  // Notes
+  async getNotes() {
+    const { data, error } = await supabase
+      .from('notes')
+      .select('*')
+      .order('created_at', { ascending: false })
+    return { data, error }
+  },
+
+  async createNote(note) {
+    const { data, error } = await supabase
+      .from('notes')
+      .insert([note])
+      .select()
+    return { data: data?.[0], error }
+  },
+
+  async updateNote(id, content) {
+    const { data, error } = await supabase
+      .from('notes')
+      .update({ content })
+      .eq('id', id)
+      .select()
+    return { data: data?.[0], error }
+  },
+
+  async deleteNote(id) {
+    const { error } = await supabase
+      .from('notes')
+      .delete()
+      .eq('id', id)
+    return { error }
+  }
+}

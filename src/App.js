@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Auth from './Auth';
 import Settings from './Settings';
-import { api } from './utils/api';
+import { api, supabase } from './utils/supabase';
 
 const EditTaskModal = ({ isOpen, onClose, task, onSave }) => {
    const [editText, setEditText] = useState(task?.text || '');
@@ -221,6 +221,7 @@ export default function TodoApp() {
    }
 
    const [tasks, setTasks] = useState([]);
+   const [currentUser, setCurrentUser] = useState(null);
    const [input, setInput] = useState('');
    const [taskDate, setTaskDate] = useState('');
    const [taskTime, setTaskTime] = useState('');
@@ -277,7 +278,8 @@ export default function TodoApp() {
        setTimeout(() => setShowMainApp(true), 100);
    };
 
-   const handleLogout = () => {
+   const handleLogout = async () => {
+       await api.signOut();
        localStorage.removeItem('currentUser');
        setUser(null);
        setIsAuthenticated(false);
@@ -288,17 +290,37 @@ export default function TodoApp() {
    };
 
    useEffect(() => {
-       if (isAuthenticated) {
-           loadTasks();
-       }
-   }, [isAuthenticated]);
+       // Check if user is logged in
+       supabase.auth.getSession().then(({ data: { session } }) => {
+           if (session) {
+               setCurrentUser(session.user);
+               setIsAuthenticated(true);
+               loadTasks();
+           }
+       });
+
+       // Listen for auth changes
+       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+           if (session) {
+               setCurrentUser(session.user);
+               setIsAuthenticated(true);
+               loadTasks();
+           } else {
+               setCurrentUser(null);
+               setIsAuthenticated(false);
+               setTasks([]);
+           }
+       });
+
+       return () => subscription.unsubscribe();
+   }, []);
 
    const loadTasks = async () => {
-       try {
-           const data = await api.getTasks();
-           setTasks(data);
-       } catch (error) {
+       const { data, error } = await api.getTasks();
+       if (error) {
            console.error('Failed to load tasks:', error);
+       } else {
+           setTasks(data || []);
        }
    };
 
@@ -346,32 +368,32 @@ export default function TodoApp() {
    const addTask = async () => {
        if (!input.trim() || !taskDate) return;
        const fullDate = taskTime ? `${taskDate}T${taskTime}` : taskDate;
-       try {
-           const newTask = await api.createTask({
-               text: input.trim(),
-               date: fullDate,
-               frequency,
-               endDate: frequency !== 'once' ? taskEndDate : '',
-           });
-           setTasks([...tasks, newTask]);
+       const { data, error } = await api.createTask({
+           text: input.trim(),
+           date: fullDate,
+           frequency,
+           end_date: frequency !== 'once' ? taskEndDate : null,
+       });
+       if (error) {
+           console.error('Failed to add task:', error);
+       } else {
+           setTasks([data, ...tasks]);
            setInput('');
            setTaskDate('');
            setTaskTime('');
            setFrequency('once');
            setTaskEndDate('');
            setShowTaskEndDatePicker(false);
-       } catch (error) {
-           console.error('Failed to add task:', error);
        }
    };
 
    const removeTask = async (index) => {
        const task = tasks[index];
-       try {
-           await api.deleteTask(task.id);
-           setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
-       } catch (error) {
+       const { error } = await api.deleteTask(task.id);
+       if (error) {
            console.error('Failed to delete task:', error);
+       } else {
+           setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
        }
    };
 
@@ -381,16 +403,21 @@ export default function TodoApp() {
    };
 
    const saveEditedTask = async (editedTask) => {
-       try {
-           const updatedTask = await api.updateTask(editedTask);
+       const { data, error } = await api.updateTask(editedTask.id, {
+           text: editedTask.text,
+           date: editedTask.date,
+           frequency: editedTask.frequency,
+           end_date: editedTask.endDate
+       });
+       if (error) {
+           console.error('Failed to update task:', error);
+       } else {
            setTasks(prevTasks =>
                prevTasks.map((task) =>
-                   task === taskToEdit ? updatedTask : task
+                   task === taskToEdit ? data : task
                )
            );
            setTaskToEdit(null);
-       } catch (error) {
-           console.error('Failed to update task:', error);
        }
    };
 

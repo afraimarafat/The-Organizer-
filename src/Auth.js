@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { api } from './utils/supabase';
 
 export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -11,29 +12,36 @@ export default function Auth({ onLogin }) {
         e.preventDefault();
         if (!email || !password) return;
 
+        console.log('Attempting auth:', { email, isLogin });
+        
         try {
-            const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-            const body = isLogin ? { email, password } : { email, password, name };
-            
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
+            const { data, error } = isLogin 
+                ? await api.signIn(email, password)
+                : await api.signUp(email, password, name);
 
-            const data = await response.json();
-            
-            if (!response.ok) {
-                alert(data.error || 'Authentication failed');
+            console.log('Auth response:', { data, error });
+
+            if (error) {
+                console.error('Auth error:', error);
+                alert(error.message || 'Authentication failed');
                 return;
             }
 
-            localStorage.setItem('authToken', data.token);
-            localStorage.setItem('currentUser', JSON.stringify(data.user));
-            onLogin(data.user);
-        } catch (error) {
-            console.error('Auth error:', error);
-            alert('Authentication failed');
+            if (data.user) {
+                const userData = {
+                    id: data.user.id,
+                    email: data.user.email,
+                    name: data.user.user_metadata?.name || name || email,
+                    preferences: { darkMode: true }
+                };
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                onLogin(userData);
+            } else {
+                alert('No user data received');
+            }
+        } catch (err) {
+            console.error('Auth catch error:', err);
+            alert('Authentication failed: ' + err.message);
         }
     };
 
