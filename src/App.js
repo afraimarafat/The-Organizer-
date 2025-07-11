@@ -110,6 +110,7 @@ const Notes = ({ notes, setNotes }) => {
        return [];
    });
    const [newNoteContent, setNewNoteContent] = useState('');
+   const [newNoteName, setNewNoteName] = useState('');
    const [activeNoteId, setActiveNoteId] = useState(null);
    const [undoStack, setUndoStack] = useState({});
    const [redoStack, setRedoStack] = useState({});
@@ -130,10 +131,12 @@ const Notes = ({ notes, setNotes }) => {
        if (newNoteContent.trim() !== '') {
            const newNote = {
                id: Date.now(),
+               name: newNoteName.trim() || `Note ${notes.length + 1}`,
                content: newNoteContent,
            };
            setNotes([...notes, newNote]);
            setNewNoteContent('');
+           setNewNoteName('');
            toggleNote(newNote.id);
        }
    };
@@ -269,6 +272,13 @@ const Notes = ({ notes, setNotes }) => {
    return (
        <div className="notes-container">
            <div className="add-note-form">
+               <input
+                   type="text"
+                   value={newNoteName}
+                   onChange={(e) => setNewNoteName(e.target.value)}
+                   placeholder="Note name (optional)"
+                   className="note-name-input"
+               />
                <textarea
                    value={newNoteContent}
                    onChange={(e) => setNewNoteContent(e.target.value)}
@@ -285,7 +295,7 @@ const Notes = ({ notes, setNotes }) => {
                                className="note-title-button"
                                onClick={() => toggleNote(note.id)}
                            >
-                               Note {notesArray.indexOf(note) + 1}
+                               {note.name || `Note ${notesArray.indexOf(note) + 1}`}
                            </button>
                            <div className="note-actions">
                                <button
@@ -404,6 +414,12 @@ export default function TodoApp() {
 
    const handleUpdateUser = (updatedUser) => {
        setUser(updatedUser);
+       // Update registered users with new preferences
+       const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+       const updatedUsers = registeredUsers.map(u => 
+           u.email === updatedUser.email ? { ...u, preferences: updatedUser.preferences } : u
+       );
+       localStorage.setItem('registeredUsers', JSON.stringify(updatedUsers));
    };
 
    useEffect(() => {
@@ -411,6 +427,12 @@ export default function TodoApp() {
            const savedUser = localStorage.getItem('currentUser');
            if (savedUser) {
                const userData = JSON.parse(savedUser);
+               // Get latest preferences from registered users
+               const registeredUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+               const currentUserData = registeredUsers.find(u => u.email === userData.email);
+               if (currentUserData) {
+                   userData.preferences = currentUserData.preferences;
+               }
                setUser(userData);
                setIsAuthenticated(true);
                setShowMainApp(true);
@@ -461,7 +483,7 @@ export default function TodoApp() {
        } else if (isAuthenticated && user?.preferences?.darkMode !== false) {
            document.body.className = 'dark-theme';
        } else {
-           document.body.className = 'light-theme';
+           document.body.className = 'dark-theme';
        }
    }, [user?.preferences?.darkMode, isAuthenticated]);
 
