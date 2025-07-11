@@ -291,53 +291,91 @@ export default function TodoApp() {
    };
 
    useEffect(() => {
-       // Check Supabase auth
-       supabase.auth.getSession().then(({ data: { session } }) => {
-           if (session) {
-               setCurrentUser(session.user);
-               setUser({
-                   id: session.user.id,
-                   email: session.user.email,
-                   name: session.user.user_metadata?.name || session.user.email,
-                   preferences: { darkMode: true }
-               });
+       // Check if user is already logged in (fallback to localStorage)
+       const savedUser = localStorage.getItem('currentUser');
+       if (savedUser) {
+           try {
+               const userData = JSON.parse(savedUser);
+               setUser(userData);
                setIsAuthenticated(true);
                setShowMainApp(true);
-               loadTasks();
+               return;
+           } catch (e) {
+               console.error('Error parsing saved user:', e);
            }
-       });
+       }
 
-       // Listen for auth changes
-       const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-           if (session) {
-               setCurrentUser(session.user);
-               setUser({
-                   id: session.user.id,
-                   email: session.user.email,
-                   name: session.user.user_metadata?.name || session.user.email,
-                   preferences: { darkMode: true }
-               });
-               setIsAuthenticated(true);
-               setShowMainApp(true);
-               loadTasks();
-           } else {
-               setCurrentUser(null);
-               setUser(null);
-               setIsAuthenticated(false);
-               setShowMainApp(false);
-               setTasks([]);
-           }
-       });
+       // Try Supabase auth if available
+       try {
+           supabase.auth.getSession().then(({ data: { session } }) => {
+               if (session) {
+                   setCurrentUser(session.user);
+                   setUser({
+                       id: session.user.id,
+                       email: session.user.email,
+                       name: session.user.user_metadata?.name || session.user.email,
+                       preferences: { darkMode: true }
+                   });
+                   setIsAuthenticated(true);
+                   setShowMainApp(true);
+                   loadTasks();
+               }
+           }).catch(err => {
+               console.error('Supabase auth error:', err);
+           });
 
-       return () => subscription.unsubscribe();
+           // Listen for auth changes
+           const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+               if (session) {
+                   setCurrentUser(session.user);
+                   setUser({
+                       id: session.user.id,
+                       email: session.user.email,
+                       name: session.user.user_metadata?.name || session.user.email,
+                       preferences: { darkMode: true }
+                   });
+                   setIsAuthenticated(true);
+                   setShowMainApp(true);
+                   loadTasks();
+               } else {
+                   setCurrentUser(null);
+                   setUser(null);
+                   setIsAuthenticated(false);
+                   setShowMainApp(false);
+                   setTasks([]);
+               }
+           });
+
+           return () => subscription.unsubscribe();
+       } catch (err) {
+           console.error('Supabase initialization error:', err);
+       }
    }, []);
 
    const loadTasks = async () => {
-       const { data, error } = await api.getTasks();
-       if (error) {
-           console.error('Failed to load tasks:', error);
-       } else {
-           setTasks(data || []);
+       try {
+           const { data, error } = await api.getTasks();
+           if (error) {
+               console.error('Failed to load tasks:', error);
+               // Fallback to localStorage
+               const saved = localStorage.getItem('tasks');
+               if (saved) {
+                   setTasks(JSON.parse(saved));
+               }
+           } else {
+               setTasks(data || []);
+           }
+       } catch (err) {
+           console.error('Load tasks error:', err);
+           // Fallback to localStorage
+           const saved = localStorage.getItem('tasks');
+           if (saved) {
+               try {
+                   setTasks(JSON.parse(saved));
+               } catch (e) {
+                   console.error('Error parsing saved tasks:', e);
+               }
+           }
        }
    };
 

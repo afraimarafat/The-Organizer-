@@ -7,10 +7,16 @@ const supabaseKey = process.env.REACT_APP_SUPABASE_ANON_KEY || process.env.SUPAB
 console.log('Supabase URL:', supabaseUrl)
 console.log('Supabase Key:', supabaseKey ? 'Key loaded' : 'Key missing')
 
-// Test connection
-supabase.from('tasks').select('count').then(({ data, error }) => {
-  console.log('Supabase connection test:', { data, error })
-})
+// Test connection safely
+if (supabaseUrl !== 'YOUR_SUPABASE_URL' && supabaseKey !== 'YOUR_SUPABASE_ANON_KEY') {
+  supabase.from('tasks').select('count').then(({ data, error }) => {
+    console.log('Supabase connection test:', { data, error })
+  }).catch(err => {
+    console.log('Supabase connection failed:', err)
+  })
+} else {
+  console.log('Supabase not configured, using localStorage fallback')
+}
 
 export const supabase = createClient(supabaseUrl, supabaseKey)
 
