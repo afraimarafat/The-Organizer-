@@ -146,21 +146,51 @@ const Notes = ({ notes, setNotes }) => {
    };
 
    const formatText = (command, value = null) => {
-       if (activeNoteId) {
+       const editor = document.getElementById(`note-${activeNoteId}`);
+       if (editor) {
+           editor.focus();
            document.execCommand(command, false, value);
+           updateNote(activeNoteId, editor.innerHTML);
        }
    };
 
    const undo = () => {
-       if (activeNoteId) {
+       const editor = document.getElementById(`note-${activeNoteId}`);
+       if (editor) {
+           editor.focus();
            document.execCommand('undo');
+           updateNote(activeNoteId, editor.innerHTML);
        }
    };
 
    const redo = () => {
-       if (activeNoteId) {
+       const editor = document.getElementById(`note-${activeNoteId}`);
+       if (editor) {
+           editor.focus();
            document.execCommand('redo');
+           updateNote(activeNoteId, editor.innerHTML);
        }
+   };
+
+   const insertFile = () => {
+       const input = document.createElement('input');
+       input.type = 'file';
+       input.accept = 'image/*,application/pdf,.doc,.docx,.txt';
+       input.onchange = (e) => {
+           const file = e.target.files[0];
+           if (file) {
+               const reader = new FileReader();
+               reader.onload = (event) => {
+                   if (file.type.startsWith('image/')) {
+                       formatText('insertImage', event.target.result);
+                   } else {
+                       formatText('insertHTML', `<a href="${event.target.result}" download="${file.name}">${file.name}</a>`);
+                   }
+               };
+               reader.readAsDataURL(file);
+           }
+       };
+       input.click();
    };
 
    const deleteNote = (id) => {
@@ -205,47 +235,56 @@ const Notes = ({ notes, setNotes }) => {
                                <div className="note-toolbar">
                                    <button onClick={undo} title="Undo">↶</button>
                                    <button onClick={redo} title="Redo">↷</button>
-                                   <select onChange={(e) => formatText('formatBlock', e.target.value)} defaultValue="">
+                                   <select onChange={(e) => { formatText('formatBlock', e.target.value); e.target.value = ''; }} defaultValue="">
                                        <option value="">Paragraph</option>
                                        <option value="h1">Heading 1</option>
                                        <option value="h2">Heading 2</option>
                                        <option value="h3">Heading 3</option>
+                                       <option value="p">Normal</option>
                                    </select>
                                    <button onClick={() => formatText('bold')} title="Bold"><b>B</b></button>
                                    <button onClick={() => formatText('italic')} title="Italic"><i>I</i></button>
                                    <button onClick={() => formatText('underline')} title="Underline"><u>U</u></button>
-                                   <select onChange={(e) => formatText('foreColor', e.target.value)} title="Text Color">
+                                   <select onChange={(e) => { formatText('foreColor', e.target.value); e.target.value = ''; }} title="Text Color">
                                        <option value="">🎨</option>
-                                       <option value="black">Black</option>
-                                       <option value="red">Red</option>
-                                       <option value="blue">Blue</option>
-                                       <option value="green">Green</option>
+                                       <option value="#000000">Black</option>
+                                       <option value="#ff0000">Red</option>
+                                       <option value="#0000ff">Blue</option>
+                                       <option value="#008000">Green</option>
+                                       <option value="#800080">Purple</option>
+                                       <option value="#ffa500">Orange</option>
+                                       <option value="#ffff00">Yellow</option>
                                    </select>
-                                   <select onChange={(e) => formatText('fontSize', e.target.value)} title="Font Size">
+                                   <select onChange={(e) => { formatText('fontSize', e.target.value); e.target.value = ''; }} title="Font Size">
                                        <option value="">A²</option>
-                                       <option value="1">Small</option>
+                                       <option value="1">Tiny</option>
+                                       <option value="2">Small</option>
                                        <option value="3">Normal</option>
+                                       <option value="4">Medium</option>
                                        <option value="5">Large</option>
-                                       <option value="7">Extra Large</option>
+                                       <option value="6">X-Large</option>
+                                       <option value="7">XX-Large</option>
                                    </select>
-                                   <button onClick={() => formatText('justifyLeft')} title="Align Left">⬅</button>
-                                   <button onClick={() => formatText('justifyCenter')} title="Align Center">⬌</button>
-                                   <button onClick={() => formatText('justifyRight')} title="Align Right">➡</button>
-                                   <button onClick={() => formatText('justifyFull')} title="Justify">⬍</button>
+                                   <button onClick={() => formatText('justifyLeft')} title="Align Left">←</button>
+                                   <button onClick={() => formatText('justifyCenter')} title="Align Center">↔</button>
+                                   <button onClick={() => formatText('justifyRight')} title="Align Right">→</button>
+                                   <button onClick={() => formatText('justifyFull')} title="Justify">↕</button>
                                    <button onClick={() => formatText('insertUnorderedList')} title="Bullet List">•</button>
                                    <button onClick={() => formatText('insertOrderedList')} title="Numbered List">1.</button>
-                                   <button onClick={() => formatText('outdent')} title="Decrease Indent">⬅</button>
-                                   <button onClick={() => formatText('indent')} title="Increase Indent">➡</button>
-                                   <button onClick={() => formatText('insertHorizontalRule')} title="Insert Line">Σ</button>
-                                   <button title="Attach File">📎</button>
+                                   <button onClick={() => formatText('outdent')} title="Decrease Indent">←</button>
+                                   <button onClick={() => formatText('indent')} title="Increase Indent">→</button>
+                                   <button onClick={() => formatText('insertHorizontalRule')} title="Insert Line">―</button>
+                                   <button onClick={insertFile} title="Attach File">📎</button>
                                </div>
                                <div
+                                   id={`note-${note.id}`}
                                    contentEditable
                                    className="note-content-rich"
-                                   dangerouslySetInnerHTML={{ __html: note.content }}
+                                   dangerouslySetInnerHTML={{ __html: note.content || '' }}
                                    onInput={(e) => updateNote(note.id, e.target.innerHTML)}
                                    onFocus={() => setActiveNoteId(note.id)}
                                    onBlur={() => setActiveNoteId(null)}
+                                   suppressContentEditableWarning={true}
                                />
                            </>
                        )}
