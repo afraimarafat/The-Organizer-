@@ -793,7 +793,9 @@ export default function TodoApp() {
                        <button onClick={() => { setView('allTasks'); setMenuOpen(false); }}>
                            My Task Gallery
                        </button>
-
+                       <button onClick={() => { setView('notes'); setMenuOpen(false); }}>
+                           Notes
+                       </button>
                        <button onClick={() => { setView('settings'); setMenuOpen(false); }}>
                            Settings
                        </button>
@@ -1028,7 +1030,9 @@ export default function TodoApp() {
                            </div>
                        )}
 
-
+                       {view === 'notes' && (
+                           <Notes notes={notes} setNotes={setNotes} />
+                       )}
 
                        {view === 'settings' && (
                            <Settings 
@@ -1114,3 +1118,5 @@ export default function TodoApp() {
        </>
    );
 }
+
+
