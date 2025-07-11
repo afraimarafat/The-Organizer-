@@ -296,79 +296,11 @@ const Notes = ({ notes, setNotes }) => {
                            </div>
                        </div>
                        {openNoteIds.includes(note.id) && (
-                           <>
-                               <div className="note-toolbar">
-                                   <button onClick={handleUndo} title="Undo">↶</button>
-                                   <button onClick={handleRedo} title="Redo">↷</button>
-                                   <select onChange={(e) => { handleFormatBlock(e.target.value); e.target.value = ''; }} defaultValue="">
-                                       <option value="">Paragraph</option>
-                                       <option value="h1">Heading 1</option>
-                                       <option value="h2">Heading 2</option>
-                                       <option value="h3">Heading 3</option>
-                                       <option value="p">Normal Text</option>
-                                   </select>
-                                   <button onClick={handleBold} title="Bold"><b>B</b></button>
-                                   <button onClick={handleItalic} title="Italic"><i>I</i></button>
-                                   <button onClick={handleUnderline} title="Underline"><u>U</u></button>
-                                   <select onChange={(e) => { handleForeColor(e.target.value); e.target.value = ''; }} title="Text Color">
-                                       <option value="">🎨</option>
-                                       <option value="#000000">Black</option>
-                                       <option value="#ff0000">Red</option>
-                                       <option value="#0000ff">Blue</option>
-                                       <option value="#008000">Green</option>
-                                       <option value="#800080">Purple</option>
-                                       <option value="#ffa500">Orange</option>
-                                       <option value="#ffff00">Yellow</option>
-                                       <option value="#ffffff">White</option>
-                                   </select>
-                                   <select onChange={(e) => { handleFontSize(e.target.value); e.target.value = ''; }} title="Font Size">
-                                       <option value="">A²</option>
-                                       <option value="1">Tiny</option>
-                                       <option value="2">Small</option>
-                                       <option value="3">Normal</option>
-                                       <option value="4">Medium</option>
-                                       <option value="5">Large</option>
-                                       <option value="6">X-Large</option>
-                                       <option value="7">XX-Large</option>
-                                   </select>
-                                   <button onClick={handleJustifyLeft} title="Align Left">←</button>
-                                   <button onClick={handleJustifyCenter} title="Align Center">↔</button>
-                                   <button onClick={handleJustifyRight} title="Align Right">→</button>
-                                   <button onClick={handleJustifyFull} title="Justify">↕</button>
-                                   <button onClick={handleInsertUnorderedList} title="Bullet List">•</button>
-                                   <button onClick={handleInsertOrderedList} title="Numbered List">1.</button>
-                                   <button onClick={handleOutdent} title="Decrease Indent">←</button>
-                                   <button onClick={handleIndent} title="Increase Indent">→</button>
-                                   <button onClick={handleInsertHorizontalRule} title="Insert Line">―</button>
-                                   <button onClick={handleFileUpload} title="Attach File">📎</button>
-                               </div>
-                               <div
-                                   id={`editor-${note.id}`}
-                                   contentEditable
-                                   className="note-content-rich"
-                                   dangerouslySetInnerHTML={{ __html: note.content || '<p>Start typing...</p>' }}
-                                   onInput={(e) => {
-                                       updateNote(note.id, e.target.innerHTML);
-                                   }}
-                                   onFocus={() => {
-                                       setActiveNoteId(note.id);
-                                   }}
-                                   onBlur={() => {
-                                       setTimeout(() => setActiveNoteId(null), 100);
-                                   }}
-                                   onMouseDown={() => {
-                                       setActiveNoteId(note.id);
-                                   }}
-                                   suppressContentEditableWarning={true}
-                                   style={{
-                                       minHeight: '150px',
-                                       padding: '15px',
-                                       border: activeNoteId === note.id ? '2px solid #3a86ff' : '1px solid #555',
-                                       borderRadius: '0 0 5px 5px',
-                                       outline: 'none'
-                                   }}
-                               />
-                           </>
+                           <textarea
+                               value={note.content}
+                               onChange={(e) => updateNote(note.id, e.target.value)}
+                               className="note-content"
+                           />
                        )}
                    </div>
                ))}
