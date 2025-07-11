@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api } from './utils/supabase';
+// import { api } from './utils/supabase';
 
 export default function Auth({ onLogin }) {
     const [isLogin, setIsLogin] = useState(true);
@@ -8,34 +8,20 @@ export default function Auth({ onLogin }) {
     const [name, setName] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
         if (!email || !password) return;
 
-        try {
-            const { data, error } = isLogin 
-                ? await api.signIn(email, password)
-                : await api.signUp(email, password, name);
-
-            if (error) {
-                alert(error.message);
-                return;
+        const userData = {
+            email,
+            name: isLogin ? email : name,
+            preferences: {
+                darkMode: true
             }
+        };
 
-            if (data.user) {
-                const userData = {
-                    id: data.user.id,
-                    email: data.user.email,
-                    name: data.user.user_metadata?.name || name || email,
-                    preferences: { darkMode: true }
-                };
-                localStorage.setItem('currentUser', JSON.stringify(userData));
-                onLogin(userData);
-            }
-        } catch (err) {
-            console.error('Auth error:', err);
-            alert('Authentication failed: ' + err.message);
-        }
+        localStorage.setItem('currentUser', JSON.stringify(userData));
+        onLogin(userData);
     };
 
     return (

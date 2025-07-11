@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 import Auth from './Auth';
 import Settings from './Settings';
-import { api, supabase } from './utils/supabase';
+// import { api, supabase } from './utils/supabase';
 
 const EditTaskModal = ({ isOpen, onClose, task, onSave }) => {
    const [editText, setEditText] = useState(task?.text || '');
@@ -278,8 +278,7 @@ export default function TodoApp() {
        setTimeout(() => setShowMainApp(true), 100);
    };
 
-   const handleLogout = async () => {
-       await api.signOut();
+   const handleLogout = () => {
        localStorage.removeItem('currentUser');
        setUser(null);
        setIsAuthenticated(false);
@@ -291,44 +290,27 @@ export default function TodoApp() {
    };
 
    useEffect(() => {
-       // Simple initialization - check localStorage first
-       const savedUser = localStorage.getItem('currentUser');
-       if (savedUser) {
-           try {
+       try {
+           const savedUser = localStorage.getItem('currentUser');
+           if (savedUser) {
                const userData = JSON.parse(savedUser);
                setUser(userData);
                setIsAuthenticated(true);
                setShowMainApp(true);
-           } catch (e) {
-               console.error('Error parsing saved user:', e);
            }
+       } catch (e) {
+           console.error('Error:', e);
        }
    }, []);
 
-   const loadTasks = async () => {
+   const loadTasks = () => {
        try {
-           const { data, error } = await api.getTasks();
-           if (error) {
-               console.error('Failed to load tasks:', error);
-               // Fallback to localStorage
-               const saved = localStorage.getItem('tasks');
-               if (saved) {
-                   setTasks(JSON.parse(saved));
-               }
-           } else {
-               setTasks(data || []);
-           }
-       } catch (err) {
-           console.error('Load tasks error:', err);
-           // Fallback to localStorage
            const saved = localStorage.getItem('tasks');
            if (saved) {
-               try {
-                   setTasks(JSON.parse(saved));
-               } catch (e) {
-                   console.error('Error parsing saved tasks:', e);
-               }
+               setTasks(JSON.parse(saved));
            }
+       } catch (e) {
+           console.error('Error loading tasks:', e);
        }
    };
 
@@ -373,36 +355,31 @@ export default function TodoApp() {
        }, 500);
    };
 
-   const addTask = async () => {
+   const addTask = () => {
        if (!input.trim() || !taskDate) return;
        const fullDate = taskTime ? `${taskDate}T${taskTime}` : taskDate;
-       const { data, error } = await api.createTask({
+       const newTask = {
+           id: Date.now(),
            text: input.trim(),
            date: fullDate,
            frequency,
-           end_date: frequency !== 'once' ? taskEndDate : null,
-       });
-       if (error) {
-           console.error('Failed to add task:', error);
-       } else {
-           setTasks([data, ...tasks]);
-           setInput('');
-           setTaskDate('');
-           setTaskTime('');
-           setFrequency('once');
-           setTaskEndDate('');
-           setShowTaskEndDatePicker(false);
-       }
+           endDate: frequency !== 'once' ? taskEndDate : '',
+       };
+       const newTasks = [newTask, ...tasks];
+       setTasks(newTasks);
+       localStorage.setItem('tasks', JSON.stringify(newTasks));
+       setInput('');
+       setTaskDate('');
+       setTaskTime('');
+       setFrequency('once');
+       setTaskEndDate('');
+       setShowTaskEndDatePicker(false);
    };
 
-   const removeTask = async (index) => {
-       const task = tasks[index];
-       const { error } = await api.deleteTask(task.id);
-       if (error) {
-           console.error('Failed to delete task:', error);
-       } else {
-           setTasks(prevTasks => prevTasks.filter((_, i) => i !== index));
-       }
+   const removeTask = (index) => {
+       const newTasks = tasks.filter((_, i) => i !== index);
+       setTasks(newTasks);
+       localStorage.setItem('tasks', JSON.stringify(newTasks));
    };
 
    const openEditModal = (index) => {
@@ -410,23 +387,13 @@ export default function TodoApp() {
        setEditModalOpen(true);
    };
 
-   const saveEditedTask = async (editedTask) => {
-       const { data, error } = await api.updateTask(editedTask.id, {
-           text: editedTask.text,
-           date: editedTask.date,
-           frequency: editedTask.frequency,
-           end_date: editedTask.endDate
-       });
-       if (error) {
-           console.error('Failed to update task:', error);
-       } else {
-           setTasks(prevTasks =>
-               prevTasks.map((task) =>
-                   task === taskToEdit ? data : task
-               )
-           );
-           setTaskToEdit(null);
-       }
+   const saveEditedTask = (editedTask) => {
+       const newTasks = tasks.map((task) =>
+           task === taskToEdit ? editedTask : task
+       );
+       setTasks(newTasks);
+       localStorage.setItem('tasks', JSON.stringify(newTasks));
+       setTaskToEdit(null);
    };
 
    const handleFileUpload = (e) => {
