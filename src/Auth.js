@@ -51,7 +51,13 @@ export default function Auth({ onLogin }) {
                 email: email.toLowerCase(),
                 password,
                 name: name || email,
-                preferences: { darkMode: true }
+                joinDate: new Date().toISOString(),
+                preferences: { 
+                    darkMode: true,
+                    language: 'English',
+                    timezone: 'AEST',
+                    emailNotifications: true
+                }
             };
             
             existingUsers.push(newUser);
