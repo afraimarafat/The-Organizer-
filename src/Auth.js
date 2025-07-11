@@ -13,12 +13,16 @@ export default function Auth({ onLogin }) {
 
         // Get existing users from localStorage
         const existingUsers = JSON.parse(localStorage.getItem('registeredUsers') || '[]');
+        console.log('Existing users:', existingUsers);
+        console.log('Trying to login with:', email);
         
         if (isLogin) {
             // Login: Check if user exists and password matches
-            const user = existingUsers.find(u => u.email === email);
+            const user = existingUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+            console.log('Found user:', user);
+            
             if (!user) {
-                alert('Email not registered. Please sign up first.');
+                alert(`Email "${email}" not registered. Please sign up first.`);
                 return;
             }
             if (user.password !== password) {
@@ -36,7 +40,7 @@ export default function Auth({ onLogin }) {
             onLogin(userData);
         } else {
             // Sign up: Check if user already exists
-            const userExists = existingUsers.find(u => u.email === email);
+            const userExists = existingUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
             if (userExists) {
                 alert('Email already registered. Please login instead.');
                 return;
@@ -44,7 +48,7 @@ export default function Auth({ onLogin }) {
             
             // Register new user
             const newUser = {
-                email,
+                email: email.toLowerCase(),
                 password,
                 name: name || email,
                 preferences: { darkMode: true }
@@ -52,6 +56,8 @@ export default function Auth({ onLogin }) {
             
             existingUsers.push(newUser);
             localStorage.setItem('registeredUsers', JSON.stringify(existingUsers));
+            console.log('Registered new user:', newUser);
+            console.log('All users now:', existingUsers);
             
             // Auto login after signup
             const userData = {
