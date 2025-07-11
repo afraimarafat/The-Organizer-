@@ -1485,7 +1485,85 @@ body.light-theme .video-preview p {
    color: #333;
 }
 
+.info-button {
+   background: #3a86ff !important;
+   color: white !important;
+}
 
+.info-button:hover {
+   background: #265ecc !important;
+}
 
+.info-modal {
+   background: #2e2e2e;
+   border-radius: 8px;
+   padding: 2rem;
+   max-width: 500px;
+   width: 90%;
+   max-height: 80vh;
+   overflow-y: auto;
+   position: relative;
+   color: #eee;
+}
 
+.info-modal h2 {
+   color: #3a86ff;
+   text-align: center;
+   margin-bottom: 1.5rem;
+   font-size: 2rem;
+}
 
+.info-modal h3 {
+   color: #ddd;
+   margin: 1rem 0 0.5rem 0;
+}
+
+.info-content p {
+   margin-bottom: 1rem;
+   font-size: 1.1rem;
+}
+
+.info-content ul {
+   list-style: none;
+   padding: 0;
+   margin: 0;
+}
+
+.info-content li {
+   padding: 0.5rem 0;
+   font-size: 1rem;
+   border-bottom: 1px solid #444;
+}
+
+.info-content li:last-child {
+   border-bottom: none;
+}
+
+.info-footer {
+   margin-top: 2rem;
+   padding-top: 1rem;
+   border-top: 1px solid #444;
+   text-align: center;
+}
+
+.info-footer p {
+   color: #999;
+   font-style: italic;
+   margin: 0;
+}
+
+.modal-close {
+   position: absolute;
+   top: 15px;
+   right: 15px;
+   background: none;
+   border: none;
+   color: #999;
+   font-size: 1.5rem;
+   cursor: pointer;
+   padding: 5px;
+}
+
+.modal-close:hover {
+   color: #fff;
+}

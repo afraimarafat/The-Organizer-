@@ -267,6 +267,7 @@ export default function TodoApp() {
 
    const [mediaViewer, setMediaViewer] = useState(null);
    const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+   const [showInfoModal, setShowInfoModal] = useState(false);
 
    const [isLoading, setIsLoading] = useState(!user);
    const [showContinueButton, setShowContinueButton] = useState(false);
@@ -614,6 +615,9 @@ export default function TodoApp() {
                        <button onClick={() => { setView('settings'); setMenuOpen(false); }}>
                            Settings
                        </button>
+                       <button onClick={() => { setShowInfoModal(true); setMenuOpen(false); }} className="info-button">
+                           ℹ️ About
+                       </button>
                        <button onClick={handleLogout} className="logout-button">
                            Logout
                        </button>
@@ -896,6 +900,31 @@ export default function TodoApp() {
                                        </span>
                                    )}
                                    <span className="media-name">{mediaViewer[currentMediaIndex]?.name}</span>
+                               </div>
+                           </div>
+                       </div>
+                   )}
+
+                   {showInfoModal && (
+                       <div className="modal-overlay" onClick={() => setShowInfoModal(false)}>
+                           <div className="info-modal" onClick={(e) => e.stopPropagation()}>
+                               <button className="modal-close" onClick={() => setShowInfoModal(false)}>×</button>
+                               <h2>The Organizer</h2>
+                               <div className="info-content">
+                                   <p><strong>Version:</strong> 1.0.0 (Beta)</p>
+                                   <h3>Features:</h3>
+                                   <ul>
+                                       <li>📅 Calendar with recurring tasks</li>
+                                       <li>📁 File management with folders</li>
+                                       <li>🎥 Media viewer for images and videos</li>
+                                       <li>📝 Notes system</li>
+                                       <li>⚙️ User settings and preferences</li>
+                                       <li>🔒 Secure user authentication</li>
+                                       <li>🎨 Dark/Light theme support</li>
+                                   </ul>
+                                   <div className="info-footer">
+                                       <p><em>*No synchronization added yet</em></p>
+                                   </div>
                                </div>
                            </div>
                        </div>
